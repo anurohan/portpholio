@@ -72,5 +72,6 @@ export const meta = {  title: "Raushan Kumar — AI/ML Engineer & Builder",
  * Set NEXT_PUBLIC_SITE_URL in the environment; falls back to a sane default.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://raushankumar.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  "https://portpholio-git-main-anurohans-projects.vercel.app"
 ).replace(/\/$/, "");
