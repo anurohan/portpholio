@@ -18,6 +18,16 @@ import SignalBridge from "./worlds/SignalBridge";
 
 type Rect = { vis: number; local: number };
 
+const WORLD_KEYS = [
+  "hero",
+  "ai",
+  "electronics",
+  "robotics",
+  "mechanical",
+  "builder",
+] as const;
+const BLEND_KEYS: readonly string[] = [...WORLD_KEYS, "studio"];
+
 /** Measure a section by id → visibility (viewport overlap) + local progress. */
 function measure(el: HTMLElement | null, vh: number): Rect {
   if (!el) return { vis: 0, local: 0 };
@@ -28,26 +38,43 @@ function measure(el: HTMLElement | null, vh: number): Rect {
   return { vis, local };
 }
 
-// Camera keyframe per world (position + lookAt), modulated by local progress.
-function camFor(world: string, local: number): { pos: THREE.Vector3; look: THREE.Vector3 } {
-  const P = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+// Write keyframes into reusable vectors to avoid allocations in the render loop.
+function camFor(
+  world: string,
+  local: number,
+  pos: THREE.Vector3,
+  look: THREE.Vector3
+): void {
   switch (world) {
     case "hero":
-      return { pos: P(0, 0, 7), look: P(0, 0, 0) };
+      pos.set(0, 0, 7);
+      look.set(0, 0, 0);
+      break;
     case "ai":
       // dolly through the network
-      return { pos: P(0, 0.3, 6.2 - local * 2.4), look: P(0, 0, 0) };
+      pos.set(0, 0.3, 6.2 - local * 2.4);
+      look.set(0, 0, 0);
+      break;
     case "electronics":
       // approach + tilt over the board
-      return { pos: P(0, 2.6 - local * 0.9, 5.6 - local * 1.4), look: P(0, 0, 0) };
+      pos.set(0, 2.6 - local * 0.9, 5.6 - local * 1.4);
+      look.set(0, 0, 0);
+      break;
     case "robotics":
-      return { pos: P(0.4, 0.8, 6.4 - local * 1.2), look: P(0, 0.6, 0) };
+      pos.set(0.4, 0.8, 6.4 - local * 1.2);
+      look.set(0, 0.6, 0);
+      break;
     case "mechanical":
-      return { pos: P(0, 0.4, 5.8 - local * 0.8), look: P(0.2, 0.2, 0) };
+      pos.set(0, 0.4, 5.8 - local * 0.8);
+      look.set(0.2, 0.2, 0);
+      break;
     case "builder":
-      return { pos: P(0, 0, 6.6 - local * 0.6), look: P(0, 0, 0) };
+      pos.set(0, 0, 6.6 - local * 0.6);
+      look.set(0, 0, 0);
+      break;
     default: // studio
-      return { pos: P(0, 0, 8), look: P(0, 0, 0) };
+      pos.set(0, 0, 8);
+      look.set(0, 0, 0);
   }
 }
 
@@ -60,6 +87,15 @@ export default function WorldDirector({ quality }: { quality: number }) {
   const tmpColor = useMemo(() => new THREE.Color(), []);
   const accentColor = useMemo(() => new THREE.Color(), []);
   const bgColor = useMemo(() => new THREE.Color(palettes.hero.bgCss), []);
+  const scratch = useMemo(
+    () => ({
+      worldPosition: new THREE.Vector3(),
+      worldLook: new THREE.Vector3(),
+      blendPosition: new THREE.Vector3(),
+      blendLook: new THREE.Vector3(),
+    }),
+    []
+  );
 
   // fog
   const fog = useMemo(() => new THREE.FogExp2(palettes.hero.bgCss, 0.045), []);
@@ -74,8 +110,7 @@ export default function WorldDirector({ quality }: { quality: number }) {
     sceneState.progress = maxScroll > 0 ? clamp(window.scrollY / maxScroll) : 0;
 
     // --- measure worlds ---
-    const worldKeys = ["hero", "ai", "electronics", "robotics", "mechanical", "builder"];
-    for (const k of worldKeys) {
+    for (const k of WORLD_KEYS) {
       const m = measure(g(k), vh);
       worldProgress[k].vis = m.vis;
       worldProgress[k].local = m.local;
@@ -96,19 +131,18 @@ export default function WorldDirector({ quality }: { quality: number }) {
     sceneState.my = damp(sceneState.my, sceneState.tmy, 4, delta);
 
     // --- blend camera + palette by visibility weights ---
-    const allKeys = [...worldKeys, "studio"];
     let wSum = 0;
-    const pos = new THREE.Vector3();
-    const look = new THREE.Vector3();
+    const pos = scratch.blendPosition.set(0, 0, 0);
+    const look = scratch.blendLook.set(0, 0, 0);
     bgColor.set(0, 0, 0);
     accentColor.set(0, 0, 0);
-    for (const k of allKeys) {
+    for (const k of BLEND_KEYS) {
       const w = worldProgress[k].vis;
       if (w <= 0.001) continue;
       wSum += w;
-      const c = camFor(k, worldProgress[k].local);
-      pos.addScaledVector(c.pos, w);
-      look.addScaledVector(c.look, w);
+      camFor(k, worldProgress[k].local, scratch.worldPosition, scratch.worldLook);
+      pos.addScaledVector(scratch.worldPosition, w);
+      look.addScaledVector(scratch.worldLook, w);
       const pal = palettes[k] ?? palettes.studio;
       tmpColor.set(pal.bgCss);
       bgColor.r += tmpColor.r * w;

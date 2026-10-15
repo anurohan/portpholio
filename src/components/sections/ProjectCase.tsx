@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { profile, type Project } from "@/content/profile";
+import type { Project } from "@/content/profile";
 import { cx } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
@@ -24,11 +24,12 @@ export default function ProjectCase({
 
   return (
     <motion.article
+      aria-labelledby={`${project.id}-title`}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
       transition={{ duration: 0.8, ease: EASE }}
-      className="group grid gap-8 rounded-3xl border border-white/10 bg-ink-800/40 p-6 backdrop-blur-md md:grid-cols-[0.9fr_1.1fr] md:p-10"
+      className="group grid gap-8 rounded-3xl border border-white/10 bg-ink-800/40 p-6 backdrop-blur-md md:p-10 lg:grid-cols-[0.9fr_1.1fr]"
       data-cursor="hover"
     >
       {/* left: info */}
@@ -40,7 +41,10 @@ export default function ProjectCase({
           <span className="text-muted">· {project.year}</span>
         </div>
 
-        <h3 className="font-display text-3xl font-semibold tracking-tight text-chalk sm:text-4xl">
+        <h3
+          id={`${project.id}-title`}
+          className="font-display text-3xl font-semibold tracking-tight text-chalk sm:text-4xl"
+        >
           {project.name}
         </h3>
         <p className="mt-2 text-base text-chalk/80">{project.tagline}</p>
@@ -113,15 +117,9 @@ export default function ProjectCase({
               Code ↗
             </a>
           ) : (
-            <a
-              href={profile.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-cursor="hover"
-              className="rounded-md border border-white/15 px-4 py-2 text-sm text-muted transition-colors hover:border-white/40 hover:text-chalk"
-            >
-              More on GitHub ↗
-            </a>
+            <p className="self-center text-xs text-muted">
+              Repository link not listed
+            </p>
           )}
         </div>
       </div>
@@ -129,15 +127,22 @@ export default function ProjectCase({
       {/* right: animated pipeline */}
       <div className="relative flex flex-col justify-center rounded-2xl border border-white/5 bg-ink-900/50 p-5 sm:p-7">
         <div className="tech-grid pointer-events-none absolute inset-0 rounded-2xl opacity-40" />
-        <div className="relative flex flex-col gap-0">
+        <p className="mono relative mb-5 text-[0.62rem] tracking-[0.22em] text-muted">
+          SYSTEM FLOW
+        </p>
+        <ol
+          role="list"
+          aria-label={`${project.name} processing pipeline`}
+          className="relative flex flex-col gap-0"
+        >
           {project.pipeline.map((stage, i) => (
-            <motion.div
+            <motion.li
               key={stage.key}
               initial={{ opacity: 0, x: -14 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.12 * i, duration: 0.5, ease: EASE }}
-              className="relative flex items-start gap-4"
+              className="relative flex list-none items-start gap-4"
             >
               {/* node + connector */}
               <div className="relative flex flex-col items-center">
@@ -173,9 +178,9 @@ export default function ProjectCase({
                 </p>
                 <p className="text-xs leading-relaxed text-muted">{stage.detail}</p>
               </div>
-            </motion.div>
+            </motion.li>
           ))}
-        </div>
+        </ol>
       </div>
     </motion.article>
   );

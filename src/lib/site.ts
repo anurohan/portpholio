@@ -50,6 +50,11 @@ export const navSections: WorldKey[] = [
   "contact",
 ];
 
+export const navLabel = (id: WorldKey) =>
+  id === "ai"
+    ? "Engineering Worlds"
+    : sections.find((section) => section.id === id)?.label ?? id;
+
 export const meta = {  title: "Raushan Kumar — AI/ML Engineer & Builder",
   description:
     "Interactive portfolio of Raushan Kumar — B.Tech CS student focused on AI/ML, computer vision and NLP, with a builder's curiosity for electronics, robotics and mechanical systems. From intelligence to machines.",

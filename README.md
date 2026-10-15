@@ -78,6 +78,8 @@ src/
 `intro` → **START** unlocks scroll → cinematic camera dolly (`entering`) → `live`.
 Scroll then drives the camera through each world. `prefers-reduced-motion` gets a
 static, instant path with no smooth-scroll hijacking.
+The intro also offers a direct **Skip intro · view projects** path for visitors
+who want to inspect the work immediately; the default START sequence is unchanged.
 
 The scroll narrative is a single continuous story — **From AI to Action**: the Hero
 core wakes, then Intelligence → Electronics → Robotics → Mechanics → Builder, and

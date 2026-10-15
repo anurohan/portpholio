@@ -6,6 +6,7 @@ import StartButton from "./StartButton";
 import { useStore } from "@/lib/store";
 import { sceneState } from "@/lib/sceneState";
 import { profile } from "@/content/profile";
+import { scrollToId } from "@/lib/lenis";
 
 const EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -43,6 +44,16 @@ export default function Intro() {
     };
     requestAnimationFrame(tick);
   }, [reduced, start, enterComplete]);
+
+  const handleExploreProjects = useCallback(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    sceneState.awake = true;
+    sceneState.entry = 1;
+    start();
+    enterComplete();
+    requestAnimationFrame(() => scrollToId("projects"));
+  }, [start, enterComplete]);
 
   // Focus trap while the intro gate is up.
   useEffect(() => {
@@ -147,6 +158,13 @@ export default function Intro() {
             >
               PRESS START · THEN SCROLL TO TRAVEL THE SYSTEM
             </motion.p>
+            <button
+              type="button"
+              onClick={handleExploreProjects}
+              className="mt-5 rounded px-4 py-3 text-sm text-steel underline-offset-4 transition-colors hover:text-chalk hover:underline"
+            >
+              Skip intro · view projects
+            </button>
           </div>
         </motion.div>
       )}

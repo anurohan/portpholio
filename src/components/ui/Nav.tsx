@@ -1,26 +1,78 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useStore } from "@/lib/store";
-import { navSections, sections } from "@/lib/site";
+import { navLabel, navSections, sections } from "@/lib/site";
 import { scrollToId } from "@/lib/lenis";
 import { profile } from "@/content/profile";
 import { cx } from "@/lib/utils";
-
-const labelFor = (id: string) => sections.find((s) => s.id === id)?.label ?? id;
 
 export default function Nav() {
   const phase = useStore((s) => s.phase);
   const active = useStore((s) => s.activeSection);
   const navOpen = useStore((s) => s.navOpen);
   const setNavOpen = useStore((s) => s.setNavOpen);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const homeButtonRef = useRef<HTMLButtonElement>(null);
 
   const go = (id: string) => {
     setNavOpen(false);
+    if (navOpen) menuTriggerRef.current?.focus();
     scrollToId(id);
   };
 
   const visible = phase === "live";
+
+  useEffect(() => {
+    if (!navOpen) return;
+    const menu = menuRef.current;
+    if (!menu) return;
+
+    const focusable = () =>
+      Array.from(
+        menu.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+        )
+      );
+    focusable()[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setNavOpen(false);
+        menuTriggerRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const nodes = focusable();
+      if (!nodes.length) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const onResize = () => {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        setNavOpen(false);
+        homeButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onResize);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [navOpen, setNavOpen]);
 
   return (
     <motion.header
@@ -33,6 +85,7 @@ export default function Nav() {
       <nav className="container-x flex h-16 items-center justify-between md:h-20">
         {/* Logo / name */}
         <button
+          ref={homeButtonRef}
           onClick={() => go("hero")}
           data-cursor="hover"
           className="group flex items-center gap-2.5"
@@ -58,7 +111,7 @@ export default function Nav() {
                 active === id ? "text-chalk" : "text-muted hover:text-chalk"
               )}
             >
-              {labelFor(id)}
+              {navLabel(id)}
               {active === id && (
                 <motion.span
                   layoutId="nav-active"
@@ -92,6 +145,7 @@ export default function Nav() {
           </a>
           {/* Mobile hamburger */}
           <button
+            ref={menuTriggerRef}
             onClick={() => setNavOpen(!navOpen)}
             aria-label={navOpen ? "Close menu" : "Open menu"}
             aria-expanded={navOpen}
@@ -120,6 +174,10 @@ export default function Nav() {
       <AnimatePresence>
         {navOpen && (
           <motion.div
+            ref={menuRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site navigation"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -140,7 +198,7 @@ export default function Nav() {
                     {sections.find((s) => s.id === id)?.index}
                   </span>
                   <span className="font-display text-3xl font-medium text-chalk">
-                    {labelFor(id)}
+                    {navLabel(id)}
                   </span>
                 </motion.button>
               ))}
