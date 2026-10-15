@@ -149,5 +149,6 @@ Next.js 14 · React 18 · TypeScript · Tailwind CSS · React Three Fiber (three
 ## Honesty note
 
 Robotics, electronics and mechanics appear as **genuine interests**, presented as
-narrative worlds — not as claimed hardware builds. The only listed recognition is the
-verified **Rank 1 — IoT Project Competition**. Software projects reflect real work.
+narrative worlds — not as claimed hardware builds. Recognition is limited to the
+verified IoT project competition and college hackathon entries in `profile.ts`.
+Software projects reflect real work.
