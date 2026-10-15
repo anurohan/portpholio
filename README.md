@@ -99,8 +99,8 @@ Everything personal lives in **`src/content/profile.ts`**. Update values there; 
 whole site follows. Fields left as `null` (e.g. `phone`, `linkedin`, project `repo`)
 render gracefully — links simply don't appear. **Do not invent values.**
 
-- Résumé: replace `public/Raushan_Kumar_CV.pdf` with your real CV (a placeholder PDF
-  is included so the link resolves).
+- Résumé: the current CV is included at `public/Raushan_Kumar_CV.pdf`; replace it
+  with an updated version when needed.
 - Skills map: `skillGroups` in `profile.ts`.
 - Narrative copy: `src/content/stories.ts`.
 - Projects: the `projects` array in `profile.ts` (WisdomLens, LifeLens AI, VisionDetect).

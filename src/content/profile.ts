@@ -255,7 +255,7 @@ export const projects: Project[] = [
     challenge:
       "Making mixed modalities searchable together: extracting clean text from images via OCR and unifying everything into a single pgvector index that stays fast as file types differ.",
     status:
-      "Working project. Upload, search and view across modalities; FastAPI + PostgreSQL/pgvector backend with a Next.js UI.",
+      "Under development. The public repository contains the project source and specification; no live demo is listed.",
     stack: ["Python", "Next.js", "FastAPI", "PostgreSQL", "pgvector", "Tesseract", "spaCy", "Sentence-Transformers"],
     pipeline: [
       { key: "inputs", label: "Mixed inputs", detail: "Documents, images and notes." },
@@ -265,7 +265,7 @@ export const projects: Project[] = [
       { key: "search", label: "Semantic search", detail: "Retrieve across modalities." },
       { key: "recall", label: "Recall", detail: "Relevant knowledge surfaced." },
     ],
-    repo: null,
+    repo: "https://github.com/anurohan/lifelens-ai",
     live: null,
   },
   {
